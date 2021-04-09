@@ -45,7 +45,9 @@ CFLAGS = -Wall
 # CSTD: which C revision to use
 CSTD = -std=c99
 
-# Release (Disables Debugging)
+# Release
+csnake: release
+
 rel: release
 
 release: csnake-rel.o
