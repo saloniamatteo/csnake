@@ -6,16 +6,8 @@
 # Normal compiler
 CC = gcc
 
-# Statically linked builds must be made using musl-gcc,
-# because the static libraries (readline, ncurses) do not
-# work with glibc
-STATIC_CC = musl-gcc
-
 # Linker flags used for Dynamic linking
-LDFLAGS = -lncurses
-# Linker flags used for Static linking
-LDFLAGS_STATIC = ./libs/ncurses/lib/libncurses.a
-INCLUDE_PATHS = -I./libs/ncurses/include
+LDFLAGS = -ltinfo -lncurses
 
 # Optimizations. Can be -O0, -O1, -O2, -O3, -Os, -Ofast
 OPTS = -Ofast
@@ -45,16 +37,11 @@ CFLAGS = -Wall
 # CSTD: which C revision to use
 CSTD = -std=c99
 
-# Release
-csnake: release
-
-rel: release
-
-release: csnake-rel.o
-	@$(CC) $^ -o csnake $(CFLAGS) $(OPTS) $(LINKER) $(ARCH) $(TUNE) $(CSTD) $(LDFLAGS)
+csnake: csnake.o
+	@$(CC) $^ -o $@ $(CFLAGS) $(OPTS) $(LINKER) $(ARCH) $(TUNE) $(CSTD) $(LDFLAGS)
 	@echo "CC $<"
 
-csnake-rel.o: csnake.c
+csnake.o: csnake.c
 	@$(CC) -c $< -o $@ $(CFLAGS) $(OPTS) $(LINKER) $(ARCH) $(TUNE)
 	@echo "CC $<"
 
@@ -69,4 +56,4 @@ gentags:
 clean:
 	rm -f *.o csnake cscope* tags
 
-.PHONY = clean csnake gentags rel release
+.PHONY = clean csnake gentags

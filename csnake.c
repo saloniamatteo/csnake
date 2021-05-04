@@ -17,42 +17,30 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <time.h>
+#include <getopt.h>
 
 /* Csnake versions (VER: string, NVER: number) */
 #define __CSNAKE_MAJ_VER	"1"
 #define __CSNAKE_MAJ_NVER	1
-#define __CSNAKE_MIN_VER	"0"
-#define __CSNAKE_MIN_NVER	0
+#define __CSNAKE_MIN_VER	"1"
+#define __CSNAKE_MIN_NVER	1
 #define __CSNAKE_VERSION	__CSNAKE_MAJ_VER "." __CSNAKE_MIN_VER
 
 #define SNAKESIZE 100		/* Maximum snake size	*/
 #define TAIL_SIZE 3		/* Default tail length	*/
-#define W_TIMEOUT 65		/* Window Timeout, Snake Speed */
 #define FOOD_CHAR "@"		/* Which character to use for food */
 #define SNAKECHAR ACS_CKBOARD	/* Which character to use for snake */
+#define DIFF_EASY 90		/* Easy difficulty */
+#define DIFF_MEDI 65		/* Medium difficulty */
+#define DIFF_HARD 50		/* Hard difficulty */
+#define DIFF_XTRM 35		/* Extreme difficulty */
 
-/* Window borders */
-/* Use ASCII borders? (Default: No (0)) */
-#define BORDER_USEASCII 0
+#define RAND(min, max) ((rand() % (max - min + 1)) + min)
 
-#if BORDER_USEASCII == 0
-#define BORDER_LU "┌"		/* Upper-Left	(Left-Up)	border */
-#define BORDER_LD "└"		/* Lower-Left	(Left-Down)	border */
-#define BORDER_RU "┐"		/* Upper-Right	(Right-Up)	border */
-#define BORDER_RD "┘"		/* Lower-Right	(Right-Down)	border */
-#define BORDER_SB "│"		/* Lateral	(Side-Border)	border */
-#else
-#define BORDER_LU "+"		/* Upper-Left	(Left-Up)	border */
-#define BORDER_LD "+"		/* Lower-Left	(Left-Down)	border */
-#define BORDER_RU "+"		/* Upper-Right	(Right-Up)	border */
-#define BORDER_RD "+"		/* Lower-Right	(Right-Down)	border */
-#define BORDER_SB "|"		/* Lateral	(Side-Border)	border */
-#endif
+/* Custom types */
+typedef unsigned int		uint32_ct;
+typedef short unsigned int	uint8_ct;
 
-/* Shorten "unsigned int" to "uint32_ct" */
-typedef unsigned int uint32_ct;
-
-/* Structures and Enums */
 typedef enum DIRECTION {
 	LEFT	= 0,	/* h, KEY_LEFT	*/
 	DOWN	= 1,	/* j, KEY_DOWN	*/
@@ -72,34 +60,112 @@ typedef struct FOOD {
 } FOOD;
 
 /* Global variables */
-
-/* Screen size */
-uint32_ct x = 0, y = 0;
-
-/* Next coordinates */
-uint32_ct nx = 0, ny = 0;
-
-/* Current tail length */
-uint32_ct tail_len = TAIL_SIZE;
-
-/* Current snake direction */
-DIRECTION direction = RIGHT;
-
-/* Snake object */
-COORD snake[SNAKESIZE] = {0};
-
-/* Food object */
-FOOD food = {0};
-
-/* Player score */
-uint32_ct score = 0;
+uint32_ct x = 0, y = 0;		/* Screen size */
+uint32_ct max_x = 0, max_y = 0;	/* Max screen size */
+uint32_ct nx = 0, ny = 0;	/* Next coordinates */
+uint32_ct tail_len = TAIL_SIZE;	/* Current tail length */
+DIRECTION direction = RIGHT;	/* Current snake direction */
+COORD snake[SNAKESIZE] = {0};	/* Snake object */
+FOOD food = {0};		/* Food object */
+uint32_ct score = 0;		/* Player score */
+uint8_ct diff = 1;		/* Difficulty */
+uint8_ct win_timeout = 65;	/* Window timeout in ms */
 
 /* Function prototypes */
-void newFood(void);		/* Create food */
-void endSnk(WINDOW *);		/* End session */
-uint32_ct randScore(void);	/* Return Random number between 1 and 10 */
-void pauseMenu(WINDOW *);	/* Create pause menu */
-void scrUpd(WINDOW *);		/* Update screen */
+WINDOW *newsubwin(int, int, int, int, char *);	/* Create new sub-window with borders */
+void diffToWinTimeout(uint8_ct);		/* Convert difficulty to window timeout */
+char *diffStr(void);				/* Return difficulty as a string */
+int  setDiff(char *);				/* Convert string to difficulty */
+void newFood(void);				/* Create food */
+void endSnk(WINDOW *);				/* End session */
+uint32_ct randScore(void);			/* Return Random number between 1 and 10 */
+void pauseMenu(void);				/* Create pause menu */
+void scrUpd(WINDOW *);				/* Update screen */
+
+/* Create new sub-window with borders */
+WINDOW
+*newsubwin(int height, int width, int starty, int startx, char *title)
+{
+	WINDOW *win = newwin(height, width, starty, startx);
+	box(win, 0, 0);
+	mvwprintw(win, 0, width / 2.5, title);
+	wrefresh(win);
+	return win;
+}
+
+/* Convert difficulty to Window Timeout */
+void
+diffToWinTimeout(uint8_ct diff)
+{
+	switch(diff) {
+	case 0:
+		win_timeout = DIFF_EASY;
+		break;
+
+	case 1: default:
+		win_timeout = DIFF_MEDI;
+		break;
+
+	case 2:
+		win_timeout = DIFF_HARD;
+		break;
+
+	case 3:
+		win_timeout = DIFF_XTRM;
+		break;
+	}
+}
+
+/* Return a string containing difficulty */
+char *
+diffStr(void)
+{
+	switch(win_timeout) {
+	case DIFF_EASY: default:
+		return "Easy";
+		break;
+
+	case DIFF_MEDI:
+		return "Medium";
+		break;
+
+	case DIFF_HARD:
+		return "Hard";
+		break;
+	
+	case DIFF_XTRM:
+		return "Extreme";
+		break;
+	}
+}
+
+/* Set difficulty from string */
+int
+setDiff(char *arg)
+{
+	int diff = atoi(arg);
+
+	switch(diff) {
+	case 0: default:	/* Easy */
+		return 0;
+		break;
+	case 1:			/* Medium */
+		return 1;
+		break;
+	case 2:			/* Hard */
+		return 2;
+		break;
+	case 3:			/* Extreme */
+		return 3;
+		break;
+	}
+}
+
+/* Print help and usage */
+void
+printHelp(void)
+{
+}
 
 /* Create food */
 void
@@ -117,17 +183,9 @@ newFood(void)
 		/* Store a pseudo-random integer */
 		uint32_ct rand_x, rand_y = {0};
 
-		/* Start with small numbers */
-		rand_x = (random() >> 5);
-		rand_y = (random() >> 5);
-
-		/* Check if random values are greater than screen size;
-		 * if they are, right-shift the random values by 3 bits,
-		 * getting a smaller number without wasting too much time. */
-		while (rand_x >= x)
-			rand_x = rand_x >> 3;
-		while (rand_y >= y)
-			rand_y = rand_y >> 3;
+		/* Generate random values between 0 and max_x/max_y */
+		rand_x = RAND(0, max_x);
+		rand_y = RAND(0, max_y);
 
 		/* If random values are <= 0, get a new random number */
 		if (rand_x <= 0 || rand_y <= 0)
@@ -143,28 +201,27 @@ newFood(void)
 void
 endSnk(WINDOW *win)
 {
-	/* Reset ncurses settings */
-	curs_set(1);	/* Show cursor */
-	nocbreak();	/* Enable line buffering */
-	keypad(win, 0);	/* Disable keypad mode */
-
 	/* Clear screen */
 	clear();
 	refresh();
 
 	/* Show final score */
-	mvwprintw(win, (y / 2) + 0, x / 2.5, "%s-------------------Csnake------------------%s\n", BORDER_LU, BORDER_RU);
-	mvwprintw(win, (y / 2) + 1, x / 2.5, "%s You lose! Score: %04d; Apples eaten: %04d %s\n", BORDER_SB, score, food.count, BORDER_SB);
-	mvwprintw(win, (y / 2) + 2, x / 2.5, "%s-------------------------------------------%s\n", BORDER_LD, BORDER_RD);
-	refresh();
+	WINDOW *fwin = newsubwin(4, 65, y / 2, x / 4, "Csnake");
+	mvwprintw(fwin, 1, 2, "You lose! Score: %04d; Apples eaten: %04d; Difficulty: %s", score, food.count, diffStr());
+	mvwaddstr(fwin, 2, 15, "Press any key to exit...");
+	wrefresh(fwin);
 
 	/* Wait for user input to exit */
-	mvwaddstr(win, y - 2, 0, "Press any key to exit...\n");
-	refresh();
 	for (;;) {
 		/* Key was pressed */
 		if (wgetch(win) != ERR) {
-			/* Exit */
+			/* Reset ncurses settings */
+			curs_set(1);	/* Show cursor */
+			nocbreak();	/* Enable line buffering */
+			keypad(win, 0);	/* Disable keypad mode */
+
+			/* Exit cleanly */
+			delwin(fwin);
 			endwin();
 			exit(0);
 		}
@@ -191,19 +248,22 @@ randScore(void)
 
 /* Create new pause menu window */
 void
-pauseMenu(WINDOW *win)
+pauseMenu(void)
 {
-	/* Clear screen */
 	clear();
 	refresh();
 
-	/* Show window */
-	while (wgetch(win) == ERR) {
-		mvwprintw(win, (y / 2) + 0, x / 2.5, "%s-----------Csnake-----------%s", BORDER_LU, BORDER_RU);
-		mvwprintw(win, (y / 2) + 1, x / 2.5, "%s Press any key to resume... %s", BORDER_SB, BORDER_SB);
-		mvwprintw(win, (y / 2) + 2, x / 2.5, "%s----------------------------%s", BORDER_LD, BORDER_RD);
-		refresh();
+	/* Show pause menu window */
+	WINDOW *pmenuwin = newsubwin(3, 30, y / 2, x / 3, "Csnake");
+	mvwprintw(pmenuwin, 1, 2, "Press any key to resume...");
+
+	/* Show pause menu */
+	while (getch() == ERR) {
+		wrefresh(pmenuwin);
 	}
+
+	/* Delete pause menu window */
+	delwin(pmenuwin);
 }
 
 /* Update screen */
@@ -225,10 +285,10 @@ scrUpd(WINDOW *win)
 }
 
 int
-main(void)
+main(int argc, char **argv)
 {
 	/* Set locale */
-	setlocale(LC_ALL, "");
+	setlocale(LC_ALL, "C");
 
 	/* Initialise ncurses */
 	WINDOW *win = initscr();
@@ -236,22 +296,70 @@ main(void)
 	cbreak();			/* Disable line buffering, speeding up key input */
 	curs_set(0);			/* Hide cursor (set visibility to 0) */
 	keypad(win, 1);			/* Enable keypad for current window */
-	wtimeout(win, W_TIMEOUT);	/* Set window timeout to 100ms */
 
 	/* Save screen size */
 	getmaxyx(win, y, x);
+	getmaxyx(win, max_y, max_x);
 
-	/* Add program info */
-	mvwprintw(win, (y / 2) + 0, x / 3, "%s-------------------Csnake-------------------%s\n", BORDER_LU, BORDER_RU);
-	mvwprintw(win, (y / 2) + 1, x / 3, "%s Csnake by Salonia Matteo v%s; Starting... %s\n", BORDER_SB,__CSNAKE_VERSION, BORDER_SB);
-	mvwprintw(win, (y / 2) + 2, x / 3, "%s--------------------------------------------%s\n", BORDER_LD, BORDER_RD);
-	refresh();
+	/* Parse commandline arguments */
+	static struct option longopts[] = {
+		{"difficulty", required_argument, 0, 'd'},
+		{"scr-x", required_argument, 0, 'x'},
+		{"scr-y", required_argument, 0, 'y'},
+	};
+
+	int optind = 0;
+
+	while ((optind = getopt_long(argc, argv, ":d:hx:y:", longopts, &optind)) != 1) {
+		switch (optind) {
+		/* Adjust difficulty */
+		case 'd':
+			diff = setDiff(optarg);
+			diffToWinTimeout(diff);
+			fprintf(stderr, "[Using difficulty %s]\n", diffStr());
+			break;
+
+		case 'h':
+			printHelp();
+			break;
+
+		case 'x':
+			int usr_x = atoi(optarg);
+			if (usr_x > 0) {
+				max_x = usr_x;
+				x = usr_x;
+				fprintf(stderr, "[Using x = %d]\n", max_x);
+			} else
+				fprintf(stderr, "[x Value not Valid, Using Default]\n");
+			break;
+		case 'y':
+			int usr_y = atoi(optarg);
+			if (usr_y > 0) {
+				max_y = usr_y;
+				y = usr_y;
+				fprintf(stderr, "[Using y = %d]\n", max_y);
+			} else
+				fprintf(stderr, "[y Value not Valid, Using Default]\n");
+			break;
+		}
+
+		if (optind <= 0)
+			break;
+	}
+
+	wtimeout(win, win_timeout);	/* Set window timeout, according to difficulty */
+
+	/* Show program info */
+	WINDOW *introwin = newsubwin(3, 45, y / 2, x / 3, "Csnake");
+	mvwprintw(introwin, 1, 2, "Csnake by Salonia Matteo v%s; Starting...", __CSNAKE_VERSION);
+	wrefresh(introwin);
 
 	/* Wait 1 second before starting */
 	sleep(1);
 
 	/* Clear screen */
 	clear();
+	delwin(introwin);
 	refresh();
 
 	/* Initial snake coordinates */
@@ -269,14 +377,12 @@ main(void)
 	newFood();
 
 	for (;;) {
-		/* Update screen size, if screen is updated */
-		getmaxyx(win, y, x);
-
 		/* Draw score */
-		mvwprintw(win, 0, 1, "Score: %04d; Apples eaten: %04d; Current Length: %04d", score, food.count, tail_len);
+		mvwprintw(win, 0, 1, "(%s) Score: %04d; Apples eaten: %04d; Current Length: %04d",
+				diffStr(), score, food.count, tail_len);
 
 		/* Get key */
-		uint32_ct key = wgetch(win);
+		uint8_ct key = wgetch(win);
 
 		/* Check which key was pressed */
 		if ((key == 'h' || key == KEY_LEFT) && (direction != LEFT && direction != RIGHT))	/* Left */
@@ -289,7 +395,7 @@ main(void)
 			direction = RIGHT;
 		/* Pressed key is esc */
 		else if (key == '')
-			pauseMenu(win);
+			pauseMenu();
 
 		/* Set next coordinates to snake's head position */
 		nx = snake[0].x;
