@@ -31,6 +31,7 @@
 #define TAIL_SIZE 3		/* Default tail length	*/
 #define FOOD_CHAR "@"		/* Which character to use for food */
 #define SNAKECHAR ACS_CKBOARD	/* Which character to use for snake */
+
 #define DIFF_EASY 90		/* Easy difficulty */
 #define DIFF_MEDI 65		/* Medium difficulty */
 #define DIFF_HARD 50		/* Hard difficulty */
