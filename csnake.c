@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <getopt.h>
+#include <libgen.h>
 
 /* Csnake versions (VER: string, NVER: number) */
 #define __CSNAKE_MAJ_VER	"1"
@@ -76,6 +77,7 @@ WINDOW *newsubwin(int, int, int, int, char *);	/* Create new sub-window with bor
 void diffToWinTimeout(uint8_ct);		/* Convert difficulty to window timeout */
 char *diffStr(void);				/* Return difficulty as a string */
 int  setDiff(char *);				/* Convert string to difficulty */
+void printHelp(char *);				/* Print help & usage, and exit */
 void newFood(void);				/* Create food */
 void endSnk(WINDOW *);				/* End session */
 uint32_ct randScore(void);			/* Return Random number between 1 and 10 */
@@ -143,19 +145,26 @@ diffStr(void)
 int
 setDiff(char *arg)
 {
-	int diff = atoi(arg);
+	char diff = arg[0];
 
 	switch(diff) {
-	case 0: default:	/* Easy */
+	/* Easy */
+	case 0: case 'e': case 'E': default:
 		return 0;
 		break;
-	case 1:			/* Medium */
+
+	/* Medium */
+	case 1:	case 'm': case 'M':
 		return 1;
 		break;
-	case 2:			/* Hard */
+
+	/* Hard */
+	case 2:	case 'h': case 'H':
 		return 2;
 		break;
-	case 3:			/* Extreme */
+	
+	/* Extreme */
+	case 3:	case 'x': case 'X':
 		return 3;
 		break;
 	}
@@ -163,8 +172,36 @@ setDiff(char *arg)
 
 /* Print help and usage */
 void
-printHelp(void)
+printHelp(char *progname)
 {
+	/* Reset ncurses settings */
+	curs_set(1);	/* Show cursor */
+	nocbreak();	/* Enable line buffering */
+	endwin();	/* Delete ncurses window */
+
+	printf("Csnake by Salonia Matteo v%s\n\n", __CSNAKE_VERSION);
+	printf("Usage:\n\
+%s	[ -d | --difficulty <difficulty> ]\n\
+	[ -x | --scr-x <maximum x> ] [ -y | --scr-y <maximum y> ]\n\
+\n\
+	-d, --difficulty diff	Set difficulty to diff, where diff is an integer\n\
+				between 0 and 3, or a letter corresponding to\n\
+				'e' (Easy), 'm' (Medium), 'h' (Hard), 'x' (Extreme).\n\
+				0 is Easy, 1 is Medium, 2 is Hard, 3 is Extreme.\n\
+\n\
+	-x, --scr-x	x	Set maximum screen size for the x axis to x.\n\
+\n\
+	-y, --scr-y	y	Set maximum screen size for the y axis to y.\n\
+\n\
+Submit any bugs or issues to Matteo Salonia <saloniamatteo@pm.me>\n\n\
+\
+If you're a developer and want to know more about csnake, read the\n\
+documentation in csnake-doc.rst, or on GitHub:\n\
+https://github.com/saloniamatteo/csnake/blob/master/csnake-doc.rst\n\
+",
+basename(progname));
+
+	exit(0);
 }
 
 /* Create food */
@@ -320,7 +357,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'h':
-			printHelp();
+			printHelp(argv[0]);
 			break;
 
 		case 'x':
