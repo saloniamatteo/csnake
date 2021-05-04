@@ -13,7 +13,8 @@ You can move the snake with Vim keys (hjkl), and the arrow keys.
 Initially written on April 9, 2021. Current version can be found in `csnake.c`
 
 ## Features
-`csnake` shows three values in the top-left corner:
+`csnake` shows four values in the top-left corner:
+	- Difficulty;
 	- Current score;
 	- How many apples have been eaten;
 	- Current snake length;
@@ -26,6 +27,12 @@ Every game starts with the food in the center of the screen, and the snake is at
 left of the screen, at the same y-coordinate of the food. (x = 0, y = screen_y / 2)
 
 You can also pause the game by pressing <kbd>Esc</kbd>.
+
+You can adjust the difficulty by running `./csnake -d <diff>`, where diff is between 0 and 3.
+For more details about flags & difficulty values, run `./csnake -h`.
+
+Also, if you're a developer, and/or you want to know more about the insides of `csnake`,
+read Csnake's Developer Documentation in `csnake-doc.rst`.
 
 ## Screenshots
 Start Screen
@@ -47,4 +54,4 @@ You Lose
 If you need help, you can:
 - Create an issue;
 - Open a pull request;
-- Send me an email [(saloniamatteo@pm.me](mailto:saloniamatteo@pm.me) or [matteo@mail.saloniamatteo.top)](mailto:matteo@mail.saloniamatteo.top).
+- Send me an email. [(saloniamatteo@pm.me](mailto:saloniamatteo@pm.me) or [matteo@mail.saloniamatteo.top)](mailto:matteo@mail.saloniamatteo.top)
