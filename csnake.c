@@ -197,7 +197,7 @@ printHelp(char *progname)
 Submit any bugs or issues to Matteo Salonia <saloniamatteo@pm.me>\n\n\
 \
 If you're a developer and want to know more about csnake, read the\n\
-documentation in csnake-doc.rst, or on GitHub:\n\
+documentation installed in /usr/share/doc/csnake/csnake-doc.rst, or on GitHub:\n\
 https://github.com/saloniamatteo/csnake/blob/master/csnake-doc.rst\n\
 ",
 basename(progname));
@@ -221,13 +221,9 @@ newFood(void)
 		/* Store a pseudo-random integer */
 		uint32_ct rand_x, rand_y = {0};
 
-		/* Generate random values between 0 and max_x/max_y */
-		rand_x = RAND(0, max_x);
-		rand_y = RAND(0, max_y);
-
-		/* If random values are <= 0, get a new random number */
-		if (rand_x <= 0 || rand_y <= 0)
-			newFood();
+		/* Generate random values, never allowing food to spawn behind text */
+		rand_x = RAND(65, max_x - 1);
+		rand_y = RAND(3, max_y - 1);
 
 		/* Set food coordinates to pseudo-random integers */
 		food.y = rand_y;	/* y */
@@ -365,7 +361,6 @@ main(int argc, char **argv)
 			int usr_x = atoi(optarg);
 			if (usr_x > 0) {
 				max_x = usr_x;
-				x = usr_x;
 				fprintf(stderr, "[Using x = %d]\n", max_x);
 			} else
 				fprintf(stderr, "[x Value not Valid, Using Default]\n");
@@ -374,7 +369,6 @@ main(int argc, char **argv)
 			int usr_y = atoi(optarg);
 			if (usr_y > 0) {
 				max_y = usr_y;
-				y = usr_y;
 				fprintf(stderr, "[Using y = %d]\n", max_y);
 			} else
 				fprintf(stderr, "[y Value not Valid, Using Default]\n");

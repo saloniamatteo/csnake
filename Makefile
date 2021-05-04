@@ -15,6 +15,12 @@ OPTS = -Ofast
 # Architecture, Tune. Set to 1 to disable.
 NOARCHTUNE = 0
 
+# Install directory
+INSTALLDIR = ${DESTDIR}${PREFIX}/usr/bin
+
+# Documentation directory
+DOCDIR = ${DESTDIR}${PREFIX}/usr/share/doc/csnake
+
 # Disable ARCH & TUNE if using cross-compiler,
 # or if compiling on ARM.
 ifeq ($(CC), aarch64-linux-gnu-gcc)
@@ -52,6 +58,17 @@ gentags:
 	$(shell find . -type f -name "*.[chsS]" -print > cscope.files)
 	$(shell ctags -L cscope.files)
 	@echo "Done! "
+
+install: csnake
+	mkdir -pv ${INSTALLDIR}
+	cp -fv csnake ${INSTALLDIR}
+	chmod -v 755 ${INSTALLDIR}/csnake
+	mkdir -pv ${DOCDIR}
+	cp -fv csnake-doc.rst README.md ${DOCDIR}
+	chmod -v 644 ${DOCDIR}/csnake-doc.rst ${DOCDIR}/README.md
+
+uninstall: clean
+	rm -fv ${INSTALLDIR}/csnake ${DOCDIR}/csnake-doc.rst
 
 clean:
 	rm -f *.o csnake cscope* tags
