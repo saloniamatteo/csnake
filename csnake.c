@@ -60,16 +60,16 @@ typedef struct FOOD {
 } FOOD;
 
 /* Global variables */
-uint32_ct x = 0, y = 0;		/* Screen size */
-uint32_ct max_x = 0, max_y = 0;	/* Max screen size */
-uint32_ct nx = 0, ny = 0;	/* Next coordinates */
-uint32_ct tail_len = TAIL_SIZE;	/* Current tail length */
-DIRECTION direction = RIGHT;	/* Current snake direction */
-COORD snake[SNAKESIZE] = {0};	/* Snake object */
-FOOD food = {0};		/* Food object */
-uint32_ct score = 0;		/* Player score */
-uint8_ct diff = 1;		/* Difficulty */
-uint8_ct win_timeout = 65;	/* Window timeout in ms */
+uint32_ct x = 0, y = 0;				/* Screen size */
+uint32_ct max_x = 0, max_y = 0;			/* Max screen size */
+uint32_ct nx = 0, ny = 0;			/* Next coordinates */
+uint32_ct tail_len = TAIL_SIZE;			/* Current tail length */
+DIRECTION direction = RIGHT;			/* Current snake direction */
+COORD snake[SNAKESIZE] = {0};			/* Snake object */
+FOOD food = {0};				/* Food object */
+uint32_ct score = 0;				/* Player score */
+uint8_ct diff = 1;				/* Difficulty */
+uint8_ct win_timeout = 65;			/* Window timeout in ms */
 
 /* Function prototypes */
 WINDOW *newsubwin(int, int, int, int, char *);	/* Create new sub-window with borders */
