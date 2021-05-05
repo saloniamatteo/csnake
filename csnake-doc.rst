@@ -77,9 +77,9 @@ The following are "#define"d in Csnake:
 ==================    ===========================      =============
 __CSNAKE_MAJ_VER      Csnake Major Version (Str)       "1"
 __CSNAKE_MAJ_NVER     Csnake Major Version (Num)       1
-__CSNAKE_MIN_VER      Csnake Minor Version (Str)       "1"
-__CSNAKE_MIN_NVER     Csnake Minor Version (Num)       1
-__CSNAKE_VERSION      Csnake Version (MAJ + MIN)       "1.1"
+__CSNAKE_MIN_VER      Csnake Minor Version (Str)       "2"
+__CSNAKE_MIN_NVER     Csnake Minor Version (Num)       2
+__CSNAKE_VERSION      Csnake Version (MAJ + MIN)       "1.2"
 
 SNAKESIZE             Maximum Snake size               100
 TAIL_SIZE             Default Tail Length              3
@@ -155,6 +155,8 @@ uint32_ct       randScore                  Generate a new random                
                                            (used for score generation)
 void            pauseMenu                  Create a new pause menu                void
                                            window, to pause the game.
+void            exitConfirm                Check if user really wants             WINDOW \*win
+                                           to exit
 void            scrUpd                     Update the screen, drawing             WINDOW \*win
                                            the food, and the snake,
                                            on the screen.
@@ -180,4 +182,6 @@ FOOD            food                     Food Object                    {0}
 uint32_ct       score                    Player Score                   0
 uint8_ct        diff                     Difficulty                     1
 uint8_ct        win_timeout              Window Timeout                 65
+uint32_ct       usr_x                    User-defined x                 0
+uint32_ct       usr_y                    User-defined y                 0
 ==========      ===================      ===========================    =============

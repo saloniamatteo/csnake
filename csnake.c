@@ -23,8 +23,8 @@
 /* Csnake versions (VER: string, NVER: number) */
 #define __CSNAKE_MAJ_VER	"1"
 #define __CSNAKE_MAJ_NVER	1
-#define __CSNAKE_MIN_VER	"1"
-#define __CSNAKE_MIN_NVER	1
+#define __CSNAKE_MIN_VER	"2"
+#define __CSNAKE_MIN_NVER	2
 #define __CSNAKE_VERSION	__CSNAKE_MAJ_VER "." __CSNAKE_MIN_VER
 
 #define SNAKESIZE 100		/* Maximum snake size	*/
@@ -72,6 +72,8 @@ FOOD food = {0};				/* Food object */
 uint32_ct score = 0;				/* Player score */
 uint8_ct diff = 1;				/* Difficulty */
 uint8_ct win_timeout = 65;			/* Window timeout in ms */
+uint32_ct usr_x = 0;				/* User-defined x */
+uint32_ct usr_y = 0;				/* User-defined y */
 
 /* Function prototypes */
 WINDOW *newsubwin(int, int, int, int, char *);	/* Create new sub-window with borders */
@@ -83,6 +85,7 @@ void newFood(void);				/* Create food */
 void endSnk(WINDOW *);				/* End session */
 uint32_ct randScore(void);			/* Return Random number between 1 and 10 */
 void pauseMenu(void);				/* Create pause menu */
+void exitConfirm(WINDOW *);			/* Check if user really wants to exit */
 void scrUpd(WINDOW *);				/* Update screen */
 
 /* Create new sub-window with borders */
@@ -183,6 +186,7 @@ printHelp(char *progname)
 	printf("Csnake by Salonia Matteo v%s\n\n", __CSNAKE_VERSION);
 	printf("Usage:\n\
 %s	[ -d | --difficulty <difficulty> ]\n\
+	[ -h | --help ]\n\
 	[ -x | --scr-x <maximum x> ] [ -y | --scr-y <maximum y> ]\n\
 \n\
 	-d, --difficulty diff	Set difficulty to diff, where diff is an integer\n\
@@ -190,9 +194,7 @@ printHelp(char *progname)
 				'e' (Easy), 'm' (Medium), 'h' (Hard), 'x' (Extreme).\n\
 				0 is Easy, 1 is Medium, 2 is Hard, 3 is Extreme.\n\
 \n\
-	-x, --scr-x	x	Set maximum screen size for the x axis to x.\n\
-\n\
-	-y, --scr-y	y	Set maximum screen size for the y axis to y.\n\
+	-h, --help		Display this help screen.\n\
 \n\
 Submit any bugs or issues to Matteo Salonia <saloniamatteo@pm.me>\n\n\
 \
@@ -300,6 +302,30 @@ pauseMenu(void)
 	delwin(pmenuwin);
 }
 
+/* Check if user really wants to exit */
+void
+exitConfirm(WINDOW *win)
+{
+	clear();
+	refresh();
+
+	/* Show exit confirmation window */
+	WINDOW *exitwin = newsubwin(4, 30, y / 2, x / 3, "Csnake");
+	mvwprintw(exitwin, 1, 2, "Do you really want to exit?");
+	mvwprintw(exitwin, 2, 2, "Press 'y' or 'Y' to exit.");
+	wrefresh(exitwin);
+
+	for (;;) {
+		char ch = getch();
+		if (ch != ERR && (ch == 'y' || ch == 'Y'))
+			endSnk(win);
+		else if (ch != ERR)
+			break;
+	}
+
+	delwin(exitwin);
+}
+
 /* Update screen */
 void
 scrUpd(WINDOW *win)
@@ -324,12 +350,8 @@ main(int argc, char **argv)
 	/* Set locale */
 	setlocale(LC_ALL, "C");
 
-	/* Initialise ncurses */
+	/* Initialise ncurses screen */
 	WINDOW *win = initscr();
-	noecho();			/* Don't echo keypresses */
-	cbreak();			/* Disable line buffering, speeding up key input */
-	curs_set(0);			/* Hide cursor (set visibility to 0) */
-	keypad(win, 1);			/* Enable keypad for current window */
 
 	/* Save screen size */
 	getmaxyx(win, y, x);
@@ -337,9 +359,10 @@ main(int argc, char **argv)
 
 	/* Parse commandline arguments */
 	static struct option longopts[] = {
-		{"difficulty", required_argument, 0, 'd'},
-		{"scr-x", required_argument, 0, 'x'},
-		{"scr-y", required_argument, 0, 'y'},
+		{"difficulty",	required_argument,	NULL, 'd'},
+		{"help",	no_argument,		NULL, 'h'},
+		{"scr-x",	required_argument,	NULL, 'x'},
+		{"scr-y",	required_argument,	NULL, 'y'},
 	};
 
 	int optind = 0;
@@ -353,25 +376,29 @@ main(int argc, char **argv)
 			fprintf(stderr, "[Using difficulty %s]\n", diffStr());
 			break;
 
-		case 'h':
+		case 'h': case '?': case '-': case ':':
 			printHelp(argv[0]);
 			break;
 
 		case 'x':
-			int usr_x = atoi(optarg);
-			if (usr_x > 0) {
-				max_x = usr_x;
-				fprintf(stderr, "[Using x = %d]\n", max_x);
+			int local_x = atoi(optarg);
+			if (local_x > 0) {
+				usr_x = local_x;
+				fprintf(stderr, "[Using x = %d]\n", usr_x);
 			} else
 				fprintf(stderr, "[x Value not Valid, Using Default]\n");
 			break;
+
 		case 'y':
-			int usr_y = atoi(optarg);
-			if (usr_y > 0) {
-				max_y = usr_y;
-				fprintf(stderr, "[Using y = %d]\n", max_y);
+			int local_y = atoi(optarg);
+			if (local_y > 0) {
+				usr_y = local_y;
+				fprintf(stderr, "[Using y = %d]\n", usr_y);
 			} else
 				fprintf(stderr, "[y Value not Valid, Using Default]\n");
+			break;
+
+		default:
 			break;
 		}
 
@@ -379,6 +406,13 @@ main(int argc, char **argv)
 			break;
 	}
 
+	max_x = usr_x != 0 ? usr_x : max_x;	/* If x was passed, set max_x to usr_x */
+	max_y = usr_y != 0 ? usr_y : max_y;	/* If y was passed, set max_y to usr_y */
+
+	noecho();			/* Don't echo keypresses */
+	cbreak();			/* Disable line buffering, speeding up key input */
+	curs_set(0);			/* Hide cursor (set visibility to 0) */
+	keypad(win, 1);			/* Enable keypad for current window */
 	wtimeout(win, win_timeout);	/* Set window timeout, according to difficulty */
 
 	/* Show program info */
@@ -425,9 +459,10 @@ main(int argc, char **argv)
 			direction = UP;
 		else if ((key == 'l' || key == KEY_RIGHT) && (direction != LEFT && direction != RIGHT))	/* Right */
 			direction = RIGHT;
-		/* Pressed key is esc */
-		else if (key == '')
+		else if (key == '')	/* "ESC" key was pressed */
 			pauseMenu();
+		else if (key == 'q')	/* "q" key was pressed */
+			exitConfirm(win);
 
 		/* Set next coordinates to snake's head position */
 		nx = snake[0].x;

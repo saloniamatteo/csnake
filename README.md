@@ -24,9 +24,10 @@ the new location of the food, it increases the user score by another random valu
 between 1 and 10, and it increases the snake's tail length by 1.
 
 Every game starts with the food in the center of the screen, and the snake is at the
-left of the screen, at the same y-coordinate of the food. (x = 0, y = screen_y / 2)
+left of the screen, at the same y-coordinate of the food. (snake_x = 0, snake_y = screen_y / 2)
 
-You can also pause the game by pressing <kbd>Esc</kbd>.
+You can also pause the game by pressing <kbd>Esc</kbd>, or quit it by pressing <kbd>q</kbd>
+(You will be prompted for confirmation)
 
 You can adjust the difficulty by running `./csnake -d <diff>`, where diff is between 0 and 3.
 For more details about flags & difficulty values, run `./csnake -h`.
