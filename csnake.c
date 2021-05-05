@@ -350,13 +350,6 @@ main(int argc, char **argv)
 	/* Set locale */
 	setlocale(LC_ALL, "C");
 
-	/* Initialise ncurses screen */
-	WINDOW *win = initscr();
-
-	/* Save screen size */
-	getmaxyx(win, y, x);
-	getmaxyx(win, max_y, max_x);
-
 	/* Parse commandline arguments */
 	static struct option longopts[] = {
 		{"difficulty",	required_argument,	NULL, 'd'},
@@ -405,6 +398,14 @@ main(int argc, char **argv)
 		if (optind <= 0)
 			break;
 	}
+
+
+	/* Initialise ncurses screen */
+	WINDOW *win = initscr();
+
+	/* Save screen size */
+	getmaxyx(win, y, x);
+	getmaxyx(win, max_y, max_x);
 
 	max_x = usr_x != 0 ? usr_x : max_x;	/* If x was passed, set max_x to usr_x */
 	max_y = usr_y != 0 ? usr_y : max_y;	/* If y was passed, set max_y to usr_y */
@@ -459,9 +460,9 @@ main(int argc, char **argv)
 			direction = UP;
 		else if ((key == 'l' || key == KEY_RIGHT) && (direction != LEFT && direction != RIGHT))	/* Right */
 			direction = RIGHT;
-		else if (key == '')	/* "ESC" key was pressed */
+		else if (key == '' || key == 'p')	/* "ESC" key or "p" key was pressed */
 			pauseMenu();
-		else if (key == 'q')	/* "q" key was pressed */
+		else if (key == 'q')			/* "q" key was pressed */
 			exitConfirm(win);
 
 		/* Set next coordinates to snake's head position */
@@ -524,6 +525,7 @@ main(int argc, char **argv)
 			snake[tail_len - 1].x = nx;
 			snake[tail_len - 1].y = ny;
 		}
+
 		/* Move snake parts */
 		COORD tmp = snake[tail_len - 1];
 		for(int i = tail_len - 1; i > 0; i--) {

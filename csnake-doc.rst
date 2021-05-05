@@ -55,18 +55,9 @@ csnake.c is structured in the following way:
 - Global Variables
 - Function Prototypes
 - Function Declarations
-- Main Function
-        - Ncurses initialisation
-        - Command-line argument options
-        - Pre-game section (show program info)
-        - Game section
-                - Snake initialisation
-                - Food creation
-                - Direction Key handling (hjkl or arrow keys)
-                - Food handling
-                - Snake movement handling
+- Main Function (See below)
 
-Overrall, the code is around 500 lines of code, even less if we talk about SLOC.
+Overrall, the code is around 400 Single Lines Of Code (SLOC).
 
 Defines
 -----------
@@ -185,3 +176,76 @@ uint8_ct        win_timeout              Window Timeout                 65
 uint32_ct       usr_x                    User-defined x                 0
 uint32_ct       usr_y                    User-defined y                 0
 ==========      ===================      ===========================    =============
+
+Program Operation
+------------------
+The actual core of the program is located in the ``main()`` function.
+The ``main()`` function is structured like this:
+
+- Locale Initialisation (C locale)
+- Command-line argument handling
+        - Loop to parse each argument
+- Ncurses Initialisation
+        - Window Initialisation
+        - Screen coordinate saving
+        - Coordinate Adjusting
+        - Various option finalisations
+- Show program info
+- Game Section
+        - Snake initialisation
+        - Food creation
+        - Direction Key handling (hjkl or arrow keys)
+        - Food handling
+        - Snake movement handling
+
+Firstly, the locale is initialised with the ``setlocale()`` function,
+located in the ``locale.h`` header.
+
+Then, we have to parse command-line options/arguments, using ``getopt_long``,
+which lets us parse both short and long options.
+
+Following that, we initialise the ncurses window, and we check if the user
+coordinates have been passed: if they aren't 0, that means the user has
+provided custom coordinates, so we set ``max_x`` and/or ``max_y`` to the custom
+coordinates, which correspond to the width (x) and height (y) of the screen.
+
+We then finalise various Ncurses options, such as:
+
+- Do not echo keypresses (``noecho()``)
+- Disable line buffering (``cbreak()``)
+- Don't display cursor (``curs_set(0)``)
+- Enable keypad, allowing us to use cursor keys (``keypad(win, 1)``)
+- Set window timeout, according to difficulty chosen by user (``wtimeout(win, win_timeout)``)
+
+Next, we briefly show ``cnake``'s info, showing the current version,
+and who made the program (Matteo Salonia).
+
+Finally, we enter the game section, where we have to actually compute the game logic:
+
+- Initialise snake position, setting the default position
+- Set new food coordinates (default coordinates are screen center)
+- Endless loop
+        - Always draw score & difficulty on top left corner
+        - Get key press from user
+                - Handle key press
+                        - Checking if a direction key (hjkl or arrow keys) was pressed
+                                - Handle the snake movement
+                        - Check if ESC (written as ``^[``) was pressed
+                                - Pause the game
+                        - Check if q was pressed
+                                - Check if the user actually wants to exit or not.
+                                  Obviously, the user is not forced to press "q" to quit, in fact they can just
+                                  press ``CTRL+C`` to exit, but their final scores won't be shown.
+                                  (Note: this might change in a future version, where an option may be passed
+                                  to save scores to a file)
+        - Set the snake's next coordinates, which always correspond to snake's head
+        - Handle direction, changing the next coordinates
+        - Check if snake has eaten food
+                - Update food count
+                - Set new tail position, increasing it by 1
+                - Add a random value between 1 and 10 to user score
+        - If the snake has not eaten food, redraw the snake
+                - Check if the snake has collided into itself
+                - Check if the snake has hit screen edges
+        - Redraw Screen
+- If the endless loop somehow fails, end game cleanly
