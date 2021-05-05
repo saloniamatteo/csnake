@@ -399,7 +399,6 @@ main(int argc, char **argv)
 			break;
 	}
 
-
 	/* Initialise ncurses screen */
 	WINDOW *win = initscr();
 
