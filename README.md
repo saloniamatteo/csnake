@@ -10,7 +10,8 @@
 
 You can move the snake with Vim keys (hjkl), and the arrow keys.
 
-Initially written on April 9, 2021. Current version can be found in `csnake.c`
+Initially written on April 9, 2021.
+Current version can be found in `csnake.c`, or by running `make version`
 
 ## Features
 `csnake` shows four values in the top-left corner:
@@ -36,6 +37,45 @@ Also, if you're a developer, and/or you want to know more about the insides of `
 read Csnake's Developer Documentation in `csnake-doc.rst`.
 Alternatively, you can read it by running `[sudo/doas] make install-doc`,
 then `vim /usr/share/doc/csnake/csnake-doc.rst`.
+
+## Command-line arguments
+`csnake` accepts the following parameters:
+
+| Flag | Long Flag      | Parameter               | Description                      |
+|------|----------------|-------------------------|----------------------------------|
+| `-b` | `--borders`    | (none)                  | Draw Screen Borders              |
+| `-d` | `--difficulty` | 0-3, 'e', 'm', 'h', 'x' | Set difficulty (see [1])         |
+| `-h` | `--help`       | (none)                  | Print help & usage               |
+| `-s` | `--save`       | savefile                | Save scores to "savefile"        |
+| `-x` | `--scr-x`      | x_val                   | Modify maximum screen x to x_val |
+| `-y` | `--scr-y`      | y_val                   | Modify maximum screen y to y_val |
+
+[1]: The difficulty values correspond to:
+
+| Diff value | Actual Difficulty |
+|------------|-------------------|
+| 0, e, E    | Easy              |
+| 1, m, M    | Medium            |
+| 2, h, H    | Hard              |
+| 3, x, X    | Extreme           |
+
+So, for example, if I want to play on "Extreme" difficulty, I'll run `csnake -dx`,
+or `csnake -d3`, `csnake -d X`, `csnake -d=x`, etc. All variations of this are valid.
+
+## Saving scores
+Optionally, users can save scores to a file, which they have access to.
+If the user is trying to overwrite the `csnake` executable, it will stop
+before doing anything dangerous (example: `./csnake -s csnake`).
+
+`csnake` is also smart and recognises if a file is not in its current directory,
+but has the same name (example: `./csnake -s /tmp/csnake)`
+
+For example, the command `./csnake -s csnake.sav`
+(or `csnake -s csnake.sav`, if it was installed using `make install`)
+is perfectly valid, and will save scores to `csnake.sav`, in the current directory.
+
+The resulting file will always be a plaintext file, no matter the format
+(png, zip, tiff, 7z, etc.)
 
 ## Installation
 Simply run `[sudo/doas] make install`.

@@ -13,18 +13,22 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <locale.h>
+#include <getopt.h>
 #include <ncurses.h>
 #include <unistd.h>
 #include <time.h>
-#include <getopt.h>
 #include <libgen.h>
+
+#define _FORTIFY_SOURCE 2
+#define _POSIX_C_SOURCE 200809L
 
 /* Csnake versions (VER: string, NVER: number) */
 #define __CSNAKE_MAJ_VER	"1"
 #define __CSNAKE_MAJ_NVER	1
-#define __CSNAKE_MIN_VER	"2"
-#define __CSNAKE_MIN_NVER	2
+#define __CSNAKE_MIN_VER	"3"
+#define __CSNAKE_MIN_NVER	3
 #define __CSNAKE_VERSION	__CSNAKE_MAJ_VER "." __CSNAKE_MIN_VER
 
 #define SNAKESIZE 100		/* Maximum snake size	*/
@@ -75,6 +79,8 @@ uint8_ct win_timeout = 65;			/* Window timeout in ms */
 uint32_ct usr_x = 0;				/* User-defined x */
 uint32_ct usr_y = 0;				/* User-defined y */
 bool borders = false;				/* Show borders? Default: no */
+char filename[100] = {0};			/* Default file used to save scores */
+bool savescore = false;				/* Save scores? Default: no */
 
 /* Function prototypes */
 WINDOW *newsubwin(int, int, int, int, char *);	/* Create new sub-window with borders */
@@ -83,6 +89,8 @@ char *diffStr(void);				/* Return difficulty as a string */
 int  setDiff(char *);				/* Convert string to difficulty */
 void printHelp(char *);				/* Print help & usage, and exit */
 void newFood(void);				/* Create food */
+int  checkFile(char *, char *);			/* Check if we can write to file */
+void saveScore(void);				/* Save scores to file */
 void endSnk(WINDOW *);				/* End session */
 uint32_ct randScore(void);			/* Return Random number between 1 and 10 */
 void pauseMenu(void);				/* Create pause menu */
@@ -202,11 +210,14 @@ printHelp(char *progname)
 \n\
 	-h, --help		Display this help screen.\n\
 \n\
+	-s, --save savefile	Save scores to file savefile.\n\
+\n\
 	-x, --scr-x x_val	Modify maximum screen x to x_val.\n\
 \n\
 	-y, --scr-y y_val	Modify maximum screen y to y_val.\n\
-Submit any bugs or issues to Matteo Salonia <saloniamatteo@pm.me>\n\n\
-\
+\n\
+Submit any bugs or issues to Matteo Salonia <saloniamatteo@pm.me>.\n\
+\n\
 If you're a developer and want to know more about csnake, read the\n\
 documentation installed in /usr/share/doc/csnake/csnake-doc.rst, or on GitHub:\n\
 https://github.com/saloniamatteo/csnake/blob/master/csnake-doc.rst\n\
@@ -248,6 +259,51 @@ newFood(void)
 	}
 }
 
+/* Check if we can write to file */
+int
+checkFile(char *file, char *name)
+{
+	/* Check if we are trying to write to ourselves */
+	if (!strcmp(file, name) || !strcmp(file, basename(name)))
+		return -1;
+
+	/* Check if file can be opened for writing */
+	FILE *tmp = fopen(file, "a+w");
+
+	if (file == NULL)
+		return 0;
+	else {
+		fclose(tmp);
+		return 1;
+	}
+}
+
+/* Save scores to file */
+void
+saveScore(void)
+{
+	/* Open file */
+	FILE *tmp = fopen(filename, "a+w");
+
+	/* Get current time */
+	time_t cur_time = time(NULL);
+	struct tm *tm = localtime(&cur_time);
+
+	/* Write to file */
+	fprintf(tmp, "\
+----------------------------------------\n\
+Date and time:	%s\
+Score:		%04d\n\
+Apples eaten:	%04d\n\
+Difficulty:	%s\n\
+----------------------------------------\n\
+",
+asctime(tm), score, food.count, diffStr());
+
+	/* Close file */
+	fclose(tmp);
+}
+
 /* End session */
 void
 endSnk(WINDOW *win)
@@ -255,6 +311,10 @@ endSnk(WINDOW *win)
 	/* Clear screen */
 	clear();
 	refresh();
+
+	/* Save scores, if requested by user */
+	if (savescore)
+		saveScore();
 
 	/* Show final score */
 	WINDOW *fwin = newsubwin(4, 65, y / 2, x / 4, "Csnake");
@@ -370,13 +430,14 @@ main(int argc, char **argv)
 		{"borders",	no_argument,		NULL, 'b'},
 		{"difficulty",	required_argument,	NULL, 'd'},
 		{"help",	no_argument,		NULL, 'h'},
+		{"save",	optional_argument,	NULL, 's'},
 		{"scr-x",	required_argument,	NULL, 'x'},
 		{"scr-y",	required_argument,	NULL, 'y'},
 	};
 
 	int optind = 0;
 
-	while ((optind = getopt_long(argc, argv, ":bd:hx:y:", longopts, &optind)) != 1) {
+	while ((optind = getopt_long(argc, argv, ":bd:hs:x:y:", longopts, &optind)) != 1) {
 		switch (optind) {
 
 		/* Show screen borders */
@@ -395,6 +456,35 @@ main(int argc, char **argv)
 		/* Print help & usage */
 		case 'h': case '?': case '-': case ':':
 			printHelp(argv[0]);
+			break;
+
+		/* Save scores to file */
+		case 's':
+			/* Check if we can write to file */
+			int file_stat = checkFile(optarg, argv[0]);
+
+			switch(file_stat) {
+			case -1:
+				fprintf(stderr, "You are trying to overwrite this file! Exiting.\n");
+				return 1;
+			case 0:
+				fprintf(stderr, "File %s cannot be opened! Exiting.\n", optarg);
+				return 1;
+			default:
+				/* Check if argument is too long */
+				int arg_len = strnlen(optarg, sizeof(filename));
+
+				if (arg_len == sizeof(filename)) {
+					fprintf(stderr, "Filename is too big (%d)! Exiting.\n", arg_len);
+					return 1;
+
+				} else {
+					strncpy(filename, optarg, arg_len);
+					savescore = true;
+					fprintf(stderr, "[Using %s to save scores]\n", filename);
+				}
+			}
+
 			break;
 
 		/* Modify maximum screen x */

@@ -43,6 +43,13 @@ CFLAGS = -Wall
 # CSTD: which C revision to use
 CSTD = -std=c99
 
+# MAJVER: Major Version
+MAJVER = $(shell grep "__CSNAKE_MAJ_VER" csnake.c -m1 | awk '{print $$3}')
+# MINVER: Minor Version
+MINVER = $(shell grep "__CSNAKE_MIN_VER" csnake.c -m1 | awk '{print $$3}')
+# FULLVER: Full Version
+FULLVER = "$(MAJVER).$(MINVER)"
+
 csnake: csnake.o
 	@$(CC) $^ -o $@ $(CFLAGS) $(OPTS) $(LINKER) $(ARCH) $(TUNE) $(CSTD) $(LDFLAGS)
 	@echo "CC $<"
@@ -70,7 +77,10 @@ install: csnake
 uninstall: clean
 	rm -fv ${INSTALLDIR}/csnake ${DOCDIR}/csnake-doc.rst
 
+version:
+	@echo $(FULLVER)
+
 clean:
 	rm -f *.o csnake cscope* tags
 
-.PHONY = clean csnake gentags
+.PHONY = clean csnake gentags install uninstall version

@@ -63,34 +63,37 @@ Defines
 -----------
 The following are "#define"d in Csnake:
 
-==================    ===========================      =============
-#define Name          Description                      Default Value
-==================    ===========================      =============
-__CSNAKE_MAJ_VER      Csnake Major Version (Str)       "1"
-__CSNAKE_MAJ_NVER     Csnake Major Version (Num)       1
-__CSNAKE_MIN_VER      Csnake Minor Version (Str)       "2"
-__CSNAKE_MIN_NVER     Csnake Minor Version (Num)       2
-__CSNAKE_VERSION      Csnake Version (MAJ + MIN)       "1.2"
+==================    ================================  =====================================
+#define Name          Description                       Default Value
+==================    ================================  =====================================
+_FORTIFY_SOURCE       Fortify source                    2
+_POSIX_C_SOURCE       Which POSIX C standard to follow  200809L
 
-SNAKESIZE             Maximum Snake size               100
-TAIL_SIZE             Default Tail Length              3
-FOOD_CHAR             Which Character to use           "@"
+__CSNAKE_MAJ_VER      Csnake Major Version (Str)        "1"
+__CSNAKE_MAJ_NVER     Csnake Major Version (Num)        1
+__CSNAKE_MIN_VER      Csnake Minor Version (Str)        "3"
+__CSNAKE_MIN_NVER     Csnake Minor Version (Num)        3
+__CSNAKE_VERSION      Csnake Version (MAJ + MIN)        "1.2" (MAJ "." MIN)
+
+SNAKESIZE             Maximum Snake size                100
+TAIL_SIZE             Default Tail Length               3
+FOOD_CHAR             Which Character to use            "@"
                       to display Food
-SNAKECHAR             Which Character to use           ACS_CKBOARD
+SNAKECHAR             Which Character to use            ACS_CKBOARD
                       to display Snake
 
-DIFF_EASY             Window Timeout in ms for         90
+DIFF_EASY             Window Timeout in ms for          90
                       Easy Difficulty
-DIFF_MEDI             Window Timeout in ms for         65
+DIFF_MEDI             Window Timeout in ms for          65
                       Medium Difficulty
-DIFF_HARD             Window Timeout in ms for         50
+DIFF_HARD             Window Timeout in ms for          50
                       Hard Difficulty
-DIFF_XTRM             Window Timeout in ms for         35
+DIFF_XTRM             Window Timeout in ms for          35
                       Extreme Difficulty
 
-RAND(min, max)        Macro to generate random         ((rand() % (max - min + 1)) + min)
+RAND(min, max)        Macro to generate random          ((rand() % (max - min + 1)) + min)
                       number between min and max 
-==================    ===========================      =============
+==================    ================================  =====================================
 
 Custom Types
 -------------
@@ -119,64 +122,73 @@ Functions
 ---------
 Csnake has the following functions:
 
-=============   ================           ===========================            ====================================
-Function Type   Function Name              Function Description                   Arguments
-=============   ================           ===========================            ====================================
-WINDOW *        newsubwin                  Create a new sub-window                int height, int width,
-                                           with default borders,                  int startx, int starty, char \*title
-                                           and return it.
-void            diffToWinTimeout           Convert difficulty to                  uint8_ct diff
-                                           ncurses window timeout.
-char *          diffStr                    Convert diffuculty to                  void
-                                           human-readable string,
-                                           and return it.
-int             setDiff                    Set difficulty from                    char \*arg
-                                           string, and return the
-                                           corresponding integer.
-void            printHelp                  Print help and usage.                  char \*progname
-void            newFood                    Generate new food                      void
-                                           coordinates.
-void            endSnk                     Exit Csnake cleanly,                   WINDOW \*win
-                                           showing total score,
-                                           total apples eaten, and
-                                           showing difficulty.
-uint32_ct       randScore                  Generate a new random                  void
-                                           integer between 1 and 10,
-                                           and return the value.
-                                           (used for score generation)
-void            pauseMenu                  Create a new pause menu                void
-                                           window, to pause the game.
-void            exitConfirm                Check if user really wants             WINDOW \*win
-                                           to exit
-void            scrUpd                     Update the screen, drawing             WINDOW \*win
-                                           the food, and the snake,
-                                           on the screen.
-=============   ================           ===========================            ====================================
+=============   ================                ===============================        ====================================
+Function Type   Function Name                   Function Description                   Arguments
+=============   ================                ===============================        ====================================
+WINDOW *        newsubwin                       Create a new sub-window                int height, int width,
+                                                with default borders,                  int startx, int starty, char \*title
+                                                and return it.
+void            diffToWinTimeout                Convert difficulty to                  uint8_ct diff
+                                                ncurses window timeout.
+char *          diffStr                         Convert diffuculty to                  void
+                                                human-readable string,
+                                                and return it.
+int             setDiff                         Set difficulty from                    char \*arg
+                                                string, and return the
+                                                corresponding integer.
+void            printHelp                       Print help and usage.                  char \*progname
+void            newFood                         Generate new food                      void
+                                                coordinates.
+int             checkFile                       Check if we can write to file,         char \*file, char \*name
+                                                and return -1 if we are trying
+                                                to write to ourselves, 0 if
+                                                the file cannot be opened, 1
+                                                if it can be opened.
+void            saveScore                       Save scores to file, according         void
+                                                to ``savefile`` variable.
+void            endSnk                          Exit Csnake cleanly,                   WINDOW \*win
+                                                showing total score,
+                                                total apples eaten, and
+                                                showing difficulty.
+uint32_ct       randScore                       Generate a new random                  void
+                                                integer between 1 and 10,
+                                                and return the value. (Used
+                                                for random score generation)
+void            pauseMenu                       Create a new pause menu                void
+                                                window, to pause the game.
+void            exitConfirm                     Check if user really wants             WINDOW \*win
+                                                to exit game.
+void            scrUpd                          Update the screen, drawing             WINDOW \*win
+                                                the food, and the snake,
+                                                on the screen.
+=============   ================                ===============================        ====================================
 
 Global Variables
 ----------------
 Csnake has the following global variables:
 
-==========      ===================      ===========================    =============
-Type            Variable Name            Description                    Default Value
-==========      ===================      ===========================    =============
-uint32_ct       x                        Screen width                   0
-uint32_ct       y                        Screen height                  0
-uint32_ct       max_x                    Max Screen width               0
-uint32_ct       max_y                    Max Screen height              0
-uint32_ct       nx                       Next x coordinate              0
-uint32_ct       ny                       Next y coordinate              0
-uint32_ct       tail_len                 Tail Length                    TAIL_SIZE
-DIRECTION       direction                Current snake direction        RIGHT
-COORD           snake[SNAKESIZE]         Snake Object                   {0}
-FOOD            food                     Food Object                    {0}
-uint32_ct       score                    Player Score                   0
-uint8_ct        diff                     Difficulty                     1
-uint8_ct        win_timeout              Window Timeout                 65
-uint32_ct       usr_x                    User-defined x                 0
-uint32_ct       usr_y                    User-defined y                 0
-bool            borders                  Are borders enabled?           false
-==========      ===================      ===========================    =============
+==========      ===================      ===================================    =============
+Type            Variable Name            Description                            Default Value
+==========      ===================      ===================================    =============
+uint32_ct       x                        Screen width                           0
+uint32_ct       y                        Screen height                          0
+uint32_ct       max_x                    Max Screen width                       0
+uint32_ct       max_y                    Max Screen height                      0
+uint32_ct       nx                       Next x coordinate                      0
+uint32_ct       ny                       Next y coordinate                      0
+uint32_ct       tail_len                 Tail Length                            TAIL_SIZE
+DIRECTION       direction                Current snake direction                RIGHT
+COORD           snake[SNAKESIZE]         Snake Object                           {0}
+FOOD            food                     Food Object                            {0}
+uint32_ct       score                    Player Score                           0
+uint8_ct        diff                     Difficulty                             1
+uint8_ct        win_timeout              Window Timeout                         65
+uint32_ct       usr_x                    User-defined x                         0
+uint32_ct       usr_y                    User-defined y                         0
+bool            borders                  Are borders enabled?                   false
+char            filename[100]		 Default file used to save scores       {0}
+bool            savescore		 Save scores?                           false
+==========      ===================      ===================================    =============
 
 Program Operation
 ------------------
