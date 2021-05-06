@@ -74,6 +74,7 @@ uint8_ct diff = 1;				/* Difficulty */
 uint8_ct win_timeout = 65;			/* Window timeout in ms */
 uint32_ct usr_x = 0;				/* User-defined x */
 uint32_ct usr_y = 0;				/* User-defined y */
+bool borders = false;				/* Show borders? Default: no */
 
 /* Function prototypes */
 WINDOW *newsubwin(int, int, int, int, char *);	/* Create new sub-window with borders */
@@ -185,9 +186,14 @@ printHelp(char *progname)
 
 	printf("Csnake by Salonia Matteo v%s\n\n", __CSNAKE_VERSION);
 	printf("Usage:\n\
-%s	[ -d | --difficulty <difficulty> ]\n\
+%s	[-b | --borders ] [ -d | --difficulty <difficulty> ]\n\
 	[ -h | --help ]\n\
 	[ -x | --scr-x <maximum x> ] [ -y | --scr-y <maximum y> ]\n\
+\n\
+	-b, --borders		Draw screen borders.\n\
+				Note: screen may flicker so, unless you have a\n\
+				screen with a high refresh rate (>60Hz ?), you should\n\
+				only use this option to test the -x & -y options.\n\
 \n\
 	-d, --difficulty diff	Set difficulty to diff, where diff is an integer\n\
 				between 0 and 3, or a letter corresponding to\n\
@@ -196,6 +202,9 @@ printHelp(char *progname)
 \n\
 	-h, --help		Display this help screen.\n\
 \n\
+	-x, --scr-x x_val	Modify maximum screen x to x_val.\n\
+\n\
+	-y, --scr-y y_val	Modify maximum screen y to y_val.\n\
 Submit any bugs or issues to Matteo Salonia <saloniamatteo@pm.me>\n\n\
 \
 If you're a developer and want to know more about csnake, read the\n\
@@ -216,16 +225,22 @@ newFood(void)
 		food.x = x / 2;
 		food.y = y / 2;
 	} else {
-
 		/* Set seed for pseudo-random generator */
 		srand(time(NULL));
 
 		/* Store a pseudo-random integer */
 		uint32_ct rand_x, rand_y = {0};
 
+		/* Check if user has enabled borders, in which case
+		 * we have to restrict maximum possible coordinates */
+		const int start_x = borders == true ? 3 : 2;
+		const int start_y = borders == true ? 4 : 3;
+		const int end_x = max_x - (borders == true ? 2 : 1);
+		const int end_y = max_y - (borders == true ? 2 : 1);
+
 		/* Generate random values, never allowing food to spawn behind text */
-		rand_x = RAND(65, max_x - 1);
-		rand_y = RAND(3, max_y - 1);
+		rand_x = RAND(start_x, end_x);
+		rand_y = RAND(start_y, end_y);
 
 		/* Set food coordinates to pseudo-random integers */
 		food.y = rand_y;	/* y */
@@ -352,6 +367,7 @@ main(int argc, char **argv)
 
 	/* Parse commandline arguments */
 	static struct option longopts[] = {
+		{"borders",	no_argument,		NULL, 'b'},
 		{"difficulty",	required_argument,	NULL, 'd'},
 		{"help",	no_argument,		NULL, 'h'},
 		{"scr-x",	required_argument,	NULL, 'x'},
@@ -360,8 +376,15 @@ main(int argc, char **argv)
 
 	int optind = 0;
 
-	while ((optind = getopt_long(argc, argv, ":d:hx:y:", longopts, &optind)) != 1) {
+	while ((optind = getopt_long(argc, argv, ":bd:hx:y:", longopts, &optind)) != 1) {
 		switch (optind) {
+
+		/* Show screen borders */
+		case 'b':
+			borders = true;
+			fprintf(stderr, "[Showing borders]\n");
+			break;
+
 		/* Adjust difficulty */
 		case 'd':
 			diff = setDiff(optarg);
@@ -369,23 +392,24 @@ main(int argc, char **argv)
 			fprintf(stderr, "[Using difficulty %s]\n", diffStr());
 			break;
 
+		/* Print help & usage */
 		case 'h': case '?': case '-': case ':':
 			printHelp(argv[0]);
 			break;
 
+		/* Modify maximum screen x */
 		case 'x':
-			int local_x = atoi(optarg);
-			if (local_x > 0) {
-				usr_x = local_x;
+			if (atoi(optarg) > 0) {
+				usr_x = atoi(optarg);
 				fprintf(stderr, "[Using x = %d]\n", usr_x);
 			} else
 				fprintf(stderr, "[x Value not Valid, Using Default]\n");
 			break;
 
+		/* Modify maximum screen y */
 		case 'y':
-			int local_y = atoi(optarg);
-			if (local_y > 0) {
-				usr_y = local_y;
+			if (atoi(optarg) > 0) {
+				usr_y = atoi(optarg);
 				fprintf(stderr, "[Using y = %d]\n", usr_y);
 			} else
 				fprintf(stderr, "[y Value not Valid, Using Default]\n");
@@ -446,6 +470,21 @@ main(int argc, char **argv)
 		/* Draw score */
 		mvwprintw(win, 0, 1, "(%s) Score: %04d; Apples eaten: %04d; Current Length: %04d",
 				diffStr(), score, food.count, tail_len);
+
+		/* Show screen borders, if option is enabled */
+		if (borders) {
+			/* Horizontal Borders */
+			for (int i = 0; i <= max_x; i++) {
+				mvwaddch(win, 1, i, '-');		/* Top Border */
+				mvwaddch(win, max_y - 1, i, '-');	/* Bottom Border */
+			}
+
+			/* Vertical Borders */
+			for (int i = 1; i <= max_y; i++) {
+				mvwaddch(win, i, 0, '|');		/* Left Border */
+				mvwaddch(win, i, max_x - 1, '|');	/* Right Border */
+			}
+		}
 
 		/* Get key */
 		uint8_ct key = wgetch(win);

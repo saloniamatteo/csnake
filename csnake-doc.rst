@@ -175,6 +175,7 @@ uint8_ct        diff                     Difficulty                     1
 uint8_ct        win_timeout              Window Timeout                 65
 uint32_ct       usr_x                    User-defined x                 0
 uint32_ct       usr_y                    User-defined y                 0
+bool            borders                  Are borders enabled?           false
 ==========      ===================      ===========================    =============
 
 Program Operation
@@ -194,6 +195,7 @@ The ``main()`` function is structured like this:
 - Game Section
         - Snake initialisation
         - Food creation
+        - (Optional) Show Borders
         - Direction Key handling (hjkl or arrow keys)
         - Food handling
         - Snake movement handling
@@ -220,7 +222,7 @@ We then finalise various Ncurses options, such as:
 Next, we briefly show ``cnake``'s info, showing the current version,
 and who made the program (Matteo Salonia).
 
-Finally, we enter the game section, where we have to actually compute the game logic:
+Finally, we enter the **game section**, where we have to actually compute the game logic:
 
 - Initialise snake position, setting the default position
 - Set new food coordinates (default coordinates are screen center)
