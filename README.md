@@ -78,20 +78,42 @@ The resulting file will always be a plaintext file, no matter the format
 (png, zip, tiff, 7z, etc.)
 
 ## Installation
-Simply run `[sudo/doas] make install`.
-`csnake` will be located under `${DESTDIR}${PREFIX}/usr/bin/csnake`:
-Tipically, `${DESTDIR}${PREFIX}` will be blank but, if one isn't,
-for example `PREFIX="~/Documents/Games/" make install`, the installation path
-will be `~/Documents/Games/usr/bin/csnake`.
+`csnake` uses GNU AutoTools, to increase portability.
 
-Additionally, you can modify the installation directory directly,
-for example, if you want to install `csnake` under `~/Documents/Games`, without
-the `/usr/bin` subdirectory, run the following command instead:
-`INSTALLDIR="~/Documents/Games" make install`
+Normally, users should only need to run `./configure && make && make install`,
+running the last command `make install` as root, or by prepending
+`doas` (or `sudo`) before `make` (`doas make install`).
 
-The documentation, instead, will be installed under
-`${DESTDIR}${PREFIX}/usr/share/doc/csnake`, and can be modified
-with the `DOCDIR` environment variable.
+On occasions where this is somehow not working, run `autoreconf --install`,
+to re-generate the configuration script, Makefile, etc.
+
+It's also possible to install documentation to any directory.
+For example, if I want to install documentation to the default
+location (/usr/share/doc/csnake), I would run the following:
+
+```bash
+# Replace "doas" with "sudo",
+# if you have the latter
+./configure && doas make install-data
+```
+
+NOTE: this only installs the documentation!
+To install both `csnake` and its documentation, run:
+
+```bash
+# Replace "doas" with "sudo",
+# if you have the latter
+./configure && make && \
+doas make install && doas make install-data
+```
+
+To uninstall documentation, simply run:
+
+```
+# Replace "doas" with "sudo",
+# if you have the latter
+doas make uninstall-doc
+```
 
 ## Screenshots
 Start Screen
