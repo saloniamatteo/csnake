@@ -326,9 +326,6 @@ OPTS = -Ofast
 # CPU-Specific Optimizations
 CPUOPTS = -march=native -mtune=native
 
-# CFLAGS: additional compiler flags
-AM_CFLAGS = -Wall $(CSTD) $(LINKER) $(OPTS) $(CPUOPTS)
-
 # Source code location
 csnake_SOURCES = src/csnake.c
 
@@ -839,6 +836,9 @@ uninstall-am: uninstall-binPROGRAMS uninstall-docDATA
 
 .PRECIOUS: Makefile
 
+
+# CFLAGS: additional compiler flags
+override CFLAGS = -Wall $(CSTD) $(LINKER) $(OPTS) $(CPUOPTS)
 
 # Clean the project directory
 cleandir:

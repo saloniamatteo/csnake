@@ -22,7 +22,7 @@ OPTS = -Ofast
 CPUOPTS = -march=native -mtune=native
 
 # CFLAGS: additional compiler flags
-AM_CFLAGS = -Wall $(CSTD) $(LINKER) $(OPTS) $(CPUOPTS)
+override CFLAGS = -Wall $(CSTD) $(LINKER) $(OPTS) $(CPUOPTS)
 
 # Executable name
 bin_PROGRAMS = csnake
