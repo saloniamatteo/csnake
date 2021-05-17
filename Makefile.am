@@ -43,5 +43,14 @@ cleandir:
 	make distclean
 	rm -rf autom4te.cache aclocal.m4 *.tar.gz
 
+version:
+	@echo ${VERSION}
+
+info:
+	@echo "${PACKAGE_STRING} made by ${AUTHOR}."
+	@echo "Report any bugs to ${PACKAGE_BUGREPORT}."
+	@echo "Homepage: ${PACKAGE_URL}"
+	@echo "Support this project: ${PACKAGE_DONATE}"
+
 # Alias "uninstall-docDATA" to "uninstall-doc"
 uninstall-doc: uninstall-docDATA

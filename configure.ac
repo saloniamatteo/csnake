@@ -31,6 +31,10 @@ else
 	AC_SUBST([docdir], [$docdir])
 fi
 
+AC_SUBST([AUTHOR], ["Matteo Salonia"])
+AC_SUBST([PACKAGE_URL], ["https://github.com/saloniamatteo/csnake"])
+AC_SUBST([PACKAGE_DONATE], ["https://saloniamatteo.top/donate.html"])
+
 AM_INIT_AUTOMAKE([gnu subdir-objects])
 AC_CONFIG_FILES([Makefile])
 AC_PROG_CC

@@ -218,6 +218,7 @@ distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+AUTHOR = @AUTHOR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -252,6 +253,7 @@ MKDIR_P = @MKDIR_P@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
+PACKAGE_DONATE = @PACKAGE_DONATE@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
@@ -765,8 +767,6 @@ html: html-am
 
 html-am:
 
-info: info-am
-
 info-am:
 
 install-data-am: install-docDATA
@@ -846,6 +846,15 @@ cleandir:
 	make clean
 	make distclean
 	rm -rf autom4te.cache aclocal.m4 *.tar.gz
+
+version:
+	@echo ${VERSION}
+
+info:
+	@echo "${PACKAGE_STRING} made by ${AUTHOR}."
+	@echo "Report any bugs to ${PACKAGE_BUGREPORT}."
+	@echo "Homepage: ${PACKAGE_URL}"
+	@echo "Support this project: ${PACKAGE_DONATE}"
 
 # Alias "uninstall-docDATA" to "uninstall-doc"
 uninstall-doc: uninstall-docDATA
