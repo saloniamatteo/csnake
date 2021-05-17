@@ -13,6 +13,9 @@ You can move the snake with Vim keys (hjkl), and the arrow keys.
 Initially written on April 9, 2021.
 Current version can be found in `csnake.c`, or by running `make version`
 
+If you plan to work on `csnake`, be sure to read `INDENTATION`,
+as well as `csnake-doc.rst`.
+
 Support this project: https://saloniamatteo.top/donate.html
 
 ## Features
